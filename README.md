@@ -1,2 +1,8 @@
 # jashin
-Python toolkit
+
+Assorted Python utilities.
+
+
+## jashin.elapsed
+
+Measure elapsed time of

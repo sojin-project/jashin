@@ -19,16 +19,6 @@ from .omit import OMIT
 __all__ = ("DictAttr", "DictAttrList", "Dictionary")
 
 
-class Dictionary:
-    _dict: Dict[str, Any]
-
-    def __init__(self, dict: Dict[str, Any]) -> None:
-        self._dict = dict
-
-    def __dictattr__(self) -> Dict[str, Any]:
-        return self._dict
-
-
 F = TypeVar("F")
 
 
@@ -124,3 +114,13 @@ class DictAttrList(DictAttrBase[F]):
 
     def __set__(self, instance: Any, value: Sequence[F]) -> None:
         self._set(instance, value)
+
+
+class Dictionary:
+    _dict: Dict[str, Any]
+
+    def __init__(self, dict: Dict[str, Any]) -> None:
+        self._dict = dict
+
+    def __dictattr__(self) -> Dict[str, Any]:
+        return self._dict
