@@ -5,9 +5,9 @@ Assorted Python utilities.
 
 ## jashin.elapsed module
 
-The `jashin.elapsed` measures elapsed time of arbitrary section.
+The `jashin.elapsed` measures elapsed time of arbitrary sections.
 
-Section can be specified by `with` block.
+Sections can be specified by `with` block.
 
 ```python
 >>> from jashin.elapsed import Elapsed
