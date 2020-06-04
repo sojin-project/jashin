@@ -11,6 +11,7 @@ from typing import (
     Callable,
     Tuple,
     Union,
+    List
 )
 
 
@@ -20,8 +21,6 @@ __all__ = ("DictAttr", "DictAttrList", "Dictionary")
 
 
 F = TypeVar("F")
-
-
 Getter = Callable[[Any], F]
 Setter = Callable[[F], Any]
 
@@ -113,8 +112,17 @@ class DictAttrList(DictAttrBase[F]):
         return [getter(v) for v in value]
 
     def __set__(self, instance: Any, value: Sequence[F]) -> None:
-        self._set(instance, value)
+        assert self.name, "Field name is not provided"
 
+        setter = self.funcs[1]
+        values: List[Any]
+
+        data = self._get_dict(instance)
+
+        if setter:
+            data[self.name] = [setter(v) for v in value]
+        else:
+            data[self.name] = value
 
 class Dictionary:
     _dict: Dict[str, Any]

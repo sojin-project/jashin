@@ -3,6 +3,140 @@
 Assorted Python utilities.
 
 
-## jashin.elapsed
+## jashin.elapsed module
 
-Measure elapsed time of
+The `jashin.elapsed` measures elapsed time of arbitrary section.
+
+Section can be specified by `with` block.
+
+```python
+>>> from jashin.elapsed import Elapsed
+>>> e = Elapsed()
+>>> def test():
+...     a = 1
+...     for i in range(10):
+...         with e("section 1"):
+...             a += 1
+...
+...         with e("section 2"):
+...             a += 1
+...
+>>> test()
+>>> e.print()
+section 1: n:10 sum:0.00002 ave:0.00000
+section 2: n:10 sum:0.00002 ave:0.00000
+```
+
+
+Or by pair of `begin(name)` and `end()` methods.
+
+```python
+>>> from jashin.elapsed import Elapsed
+>>> e = Elapsed()
+>>> def test2():
+...     a = 1
+...     for i in range(10):
+...         e.begin("section A"):
+...         a += 1
+...         e.end()
+...
+...         e.begin("section B"):
+...         a += 1
+...         e.end()
+...
+>>> test2()
+>>> e.print()
+section A: n:10 sum:0.00002 ave:0.00000
+section B: n:10 sum:0.00002 ave:0.00000
+```
+
+## jashin.dictattr module
+
+Encapsulate deeply nested dict with class.
+
+
+```python
+from jashin.dictattr import DictAttr
+from dateutil.parser import parse as dateparse
+
+class User:
+    name = DictAttr()
+    age = DictAttr()
+    created = DictAttr(dateparse) # convert string into datetime object
+
+    def __init__(self, rec):
+        self._rec = rec
+
+    def __dictattr__(self):
+        """Called by `DictAttr` object to get dictonary."""
+
+        return self._rec
+
+record = {
+    "name": "test user",
+    "age": 20,
+    "created": '2011-01-01T00:00:00'
+}
+
+user = User(record)
+
+print(user.name) # -> "test user"
+print(user.age)  # -> 20
+print(repr(user.created)) # -> datetime.datetime(2011, 1, 1, 0, 0)
+
+user.age = 30
+print(record['age']) # -> 30
+```
+
+Although `DictAttr` works any classes with `__dictattr__` method, `Dictionary` class is provied to avoid boilerplate code.
+
+The `DictAttr` can be used with nested dict object.
+
+```python
+from jashin.dictattr import DictAttr, DictAttrList, Dictionary
+from dateutil.parser import parse as dateparse
+
+class User(Dictionary):
+    name = DictAttr()
+    age = DictAttr()
+
+class Group(Dictionary):
+    owner = DictAttr(User)
+    members = DictAttrList(User)
+
+record = {
+    "owner": {
+        "name": "owner name",
+        "age": 30
+    },
+    "members": [{
+        "name": "member1",
+        "age": 30
+    },]
+}
+
+group = Group(record)
+
+print(group.owner.name) # -> "owner name"
+print(group.members[0].name) # -> "member1"
+```
+
+Type annotation is supported.
+
+```python
+from dateutil.parser import parse as dateparse
+
+class User(Dictionary):
+    name = DictAttr[str]()  # Explicity specify type
+    age = DictAttr(int)     # Inferred from `int` function.
+    created = DictAttr(dateparse) # Inferred from `dateparse` function.
+
+
+user.name = "name"  # OK
+user.age = "30"     # Incompatible types in assignment
+                    # (expression has type "str", variable has type "int")
+
+user.age = 100      # Incompatible types in assignment
+                    # (expression has type "int", variable has type "datetime")
+
+```
