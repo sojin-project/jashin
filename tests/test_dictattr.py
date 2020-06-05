@@ -26,14 +26,14 @@ def test_dictattr() -> None:
 
 
 def test_getter() -> None:
-    class Child(Dictionary):
+    class Child(DictModel):
         field1 = DictAttr(int)
 
     class Label(enum.Enum):
         A = 100
         B = 200
 
-    class Parent(Dictionary):
+    class Parent(DictModel):
         field1 = DictAttr(Child)
         field2 = DictAttr(Label)
 
@@ -45,10 +45,10 @@ def test_getter() -> None:
 
 
 def test_list() -> None:
-    class Child(Dictionary):
+    class Child(DictModel):
         field1 = DictAttr[str]()
 
-    class Parent(Dictionary):
+    class Parent(DictModel):
         field1 = DictAttrList(Child)
 
     d = Parent({"field1": [{"field1": "100",}, {"field1": "200",}], "field2": 200})
@@ -59,14 +59,14 @@ def test_list() -> None:
 
 
 def test_set() -> None:
-    class Parent(Dictionary):
+    class Parent(DictModel):
         field1 = DictAttr[str]()
 
     d = Parent({})
     d.field1 = "abc"
     assert d._dict == {"field1": "abc"}
 
-    class Parent2(Dictionary):
+    class Parent2(DictModel):
         field1 = DictAttr[str](setter=int)
 
     d2 = Parent2({})
@@ -76,7 +76,7 @@ def test_set() -> None:
     def setter(i: int) -> int:
         return i * 2
 
-    class Parent3(Dictionary):
+    class Parent3(DictModel):
         field1 = DictAttrList(int, setter=setter)
 
     d3 = Parent3({})
@@ -85,7 +85,7 @@ def test_set() -> None:
 
 
 def test_del() -> None:
-    class Parent(Dictionary):
+    class Parent(DictModel):
         field1 = DictAttr[str]()
 
     d = Parent({"field1": "abc"})

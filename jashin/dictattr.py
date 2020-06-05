@@ -17,7 +17,7 @@ from typing import (
 
 from .omit import OMIT
 
-__all__ = ("DictAttr", "DictAttrList", "Dictionary")
+__all__ = ("DictAttr", "DictAttrList", "DictModel")
 
 
 F = TypeVar("F")
@@ -125,7 +125,7 @@ class DictAttrList(DictAttrBase[F]):
             data[self.name] = value
 
 
-class Dictionary:
+class DictModel:
     _dict: Dict[str, Any]
 
     def __init__(self, dict: Dict[str, Any]) -> None:

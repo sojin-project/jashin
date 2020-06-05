@@ -41,19 +41,19 @@ user.age = 30
 print(record['age']) # -> 30
 ```
 
-Although `DictAttr` works any classes with `__dictattr__` method, `Dictionary` class is provied to avoid boilerplate code.
+Although `DictAttr` works any classes with `__dictattr__` method, `DictModel` class is provied to avoid boilerplate code.
 
 The `DictAttr` can be used with nested dict object.
 
 ```python
-from jashin.dictattr import DictAttr, DictAttrList, Dictionary
+from jashin.dictattr import DictAttr, DictAttrList, DictModel
 from dateutil.parser import parse as dateparse
 
-class User(Dictionary):
+class User(DictModel):
     name = DictAttr()
     age = DictAttr()
 
-class Group(Dictionary):
+class Group(DictModel):
     owner = DictAttr(User)
     members = DictAttrList(User)
 
@@ -79,7 +79,7 @@ Type annotation is supported.
 ```python
 from dateutil.parser import parse as dateparse
 
-class User(Dictionary):
+class User(DictModel):
     name = DictAttr[str]()  # Explicity specify type
     age = DictAttr(int)     # Inferred from `int` function.
     created = DictAttr(dateparse) # Inferred from `dateparse` function.
