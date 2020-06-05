@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from typing import Any, Iterable, List
-from functools import singledispatch
+from typing import Any, Iterable, List, TypeVar
+import functools
 import datetime
 import base64
 import collections.abc
@@ -9,7 +9,7 @@ import collections.abc
 __all__ = ["converter", "common"]
 
 
-def converter() -> Any:
+def converter() -> functools._SingleDispatchCallable[Any]:
     """Generic function integded to be used for default function of json seriarizer.
 
     Usage::
@@ -34,8 +34,9 @@ def converter() -> Any:
         json.dumps([Foo(), Bar()], default=repo)
     """
 
-    @singledispatch
-    def _repogitory(obj: Any) -> None:
+    @functools.singledispatch
+    def _repogitory(obj: Any) -> Any:
+
         raise TypeError(
             f"Object of type {obj.__class__.__name__} is not JSON serializable"
         )
@@ -43,7 +44,10 @@ def converter() -> Any:
     return _repogitory
 
 
-def common() -> Any:
+T = TypeVar("T")
+
+
+def common() -> functools._SingleDispatchCallable[Any]:
     """A set of common JSON converter.
 
     - datetime.date/datetime.datetime -> ISO 8601 format(e.g. YYYY-MM-DD).
@@ -56,20 +60,20 @@ def common() -> Any:
 
     repo = converter()
 
-    @repo.register  # type: ignore
+    @repo.register
     def conv_date(obj: datetime.datetime) -> str:
         return obj.isoformat()
 
-    @repo.register  # type: ignore
+    @repo.register
     def conv_datetime(obj: datetime.date) -> str:
         return obj.isoformat()
 
-    @repo.register  # type: ignore
+    @repo.register
     def conv_bytes(obj: bytes) -> str:
         return base64.b64encode(obj).decode("ascii")
 
-    @repo.register(collections.abc.Iterable)  # type: ignore
-    def conv_set(obj: Iterable[Any]) -> List[Any]:
+    @repo.register(collections.abc.Iterable)
+    def conv_set(obj: collections.abc.Iterable[T]) -> List[T]:
         return list(obj)
 
     return repo

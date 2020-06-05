@@ -16,7 +16,7 @@ def test_converter() -> None:
 
     repo = jsondefault.converter()
 
-    @repo.register  # type: ignore
+    @repo.register
     def test_conv(foo: Foo) -> Dict[str, int]:
         return {"a": foo.a}
 
