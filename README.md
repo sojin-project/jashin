@@ -158,17 +158,17 @@ def converter(obj):
 
     ...
 
-print(json.dumps(object, default=converter))
+print(json.dumps(obj, default=converter))
 ```
 
-This is tedious. The `jashin.jsondefault.common` provides common functionary to make objects JSON serializable.
+This is tedious. The `jashin.jsondefault.common` provides common functionary to make popular types of objects JSON serializable.
 
 ```python
 
 from jashin import jsondefault
 
 repo = jsondefault.common()
-print(json.dumps(object, default=repo)
+print(json.dumps(obj, default=repo)
 ```
 
 Since `jashin.jsondefault.common` is a [single-dispatch generic function](https://docs.python.org/3/library/functools.html#functools.singledispatch), you can extend it to convert your custom objects.
