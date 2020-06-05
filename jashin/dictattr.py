@@ -11,7 +11,7 @@ from typing import (
     Callable,
     Tuple,
     Union,
-    List
+    List,
 )
 
 
@@ -123,6 +123,7 @@ class DictAttrList(DictAttrBase[F]):
             data[self.name] = [setter(v) for v in value]
         else:
             data[self.name] = value
+
 
 class Dictionary:
     _dict: Dict[str, Any]

@@ -73,8 +73,8 @@ def test_set() -> None:
     d2.field1 = "1000"
     assert d2._dict == {"field1": 1000}
 
-    def setter(i:int)->int:
-        return i*2
+    def setter(i: int) -> int:
+        return i * 2
 
     class Parent3(Dictionary):
         field1 = DictAttrList(int, setter=setter)
