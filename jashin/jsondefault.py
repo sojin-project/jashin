@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Iterable, List, TypeVar
+from typing import Any, List, TypeVar
 import functools
 import datetime
 import base64

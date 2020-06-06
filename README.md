@@ -20,7 +20,7 @@ class User:
     def __init__(self, rec):
         self._rec = rec
 
-    def __dictattr__(self):
+    def __dictattr_get__(self):
         """Called by `DictAttr` object to get dictonary."""
 
         return self._rec
@@ -41,7 +41,7 @@ user.age = 30
 print(record['age']) # -> 30
 ```
 
-Although `DictAttr` works any classes with `__dictattr__` method, `DictModel` class is provied to avoid boilerplate code.
+Although `DictAttr` works any classes with `__dictattr_get__` method, `DictModel` class is provied to avoid boilerplate code.
 
 The `DictAttr` can be used with nested dict object.
 
