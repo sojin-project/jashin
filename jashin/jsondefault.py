@@ -10,7 +10,7 @@ __all__ = ["converter", "common"]
 
 
 def converter() -> functools._SingleDispatchCallable[Any]:
-    """Generic function integded to be used for default function of json seriarizer.
+    """Generic function intended to be used for default function of json seriarizer.
 
     Usage::
         repo = jsondefault.converter()
@@ -44,9 +44,6 @@ def converter() -> functools._SingleDispatchCallable[Any]:
     return _repogitory
 
 
-T = TypeVar("T")
-
-
 def common() -> functools._SingleDispatchCallable[Any]:
     """A set of common JSON converter.
 
@@ -73,7 +70,7 @@ def common() -> functools._SingleDispatchCallable[Any]:
         return base64.b64encode(obj).decode("ascii")
 
     @repo.register(collections.abc.Iterable)
-    def conv_set(obj: collections.abc.Iterable[T]) -> List[T]:
+    def conv_set(obj: collections.abc.Iterable[Any]) -> List[Any]:
         return list(obj)
 
     return repo
