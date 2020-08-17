@@ -5,7 +5,7 @@ Assorted Python utilities.
 
 ## jashin.dictattr module
 
-Encapsulate deeply nested dict with class.
+Type annotation ready module to encapsulate nested dict with class.
 
 To wrap a dictionary like this,
 
@@ -17,15 +17,15 @@ userdict = {
 ```
 
 
-`Jashin.dictattr` provides `DictAttr` and `DictModel` class.
+`Jashin.dictattr` provides `ItemAttr` and `DictModel` class.
 
 ```python
-from jashin.dictattr import DictAttr, DictModel
+from jashin.dictattr import ItemAttr, DictModel
 from dateutil.parser import parse as dateparse
 
 class User(DictModel):
-    name = DictAttr()
-    age = DictAttr()
+    name = ItemAttr()
+    age = ItemAttr()
 
 user = User(userdict)
 print(user.name, user.created)
@@ -34,7 +34,7 @@ user.age = 30          # updates userdict
 pritn(userdict['age']) # prints 30
 ```
 
-`DictAttr` supports nested objects.
+`ItemAttr` supports nested objects.
 
 ```python
 
@@ -54,26 +54,26 @@ To wrap a dictionary above, you can provide `Company` class.
 
 ```python
 class Company(DictModel):
-    ceo = DictAttr(name='CEO')
-    coo = DictAttr(name='COO')
+    CEO = ItemAttr(User)
+    COO = ItemAttr(User)
 
 company = Company(companydict)
-print(company.ceo.name)  # prints 'A CEO'
+print(company.CEO.name)  # prints 'A CEO'
 ```
 
-`DictModel` class is not mandatory, but is provied to avoid boilerplate code. `DictAttr` works any classes with `__dictattr_get__` method.
+`DictModel` class is not mandatory, but is provied to avoid boilerplate code. `ItemAttr` works any classes with `__dictattr_get__` method.
 
 
 ```python
 class User:
-    name = DictAttr()
-    age = DictAttr()
+    name = ItemAttr()
+    age = ItemAttr()
 
     def __init__(self, record):
         self._recdict = record
 
     def __dictattr_get__(self):
-        "Called by DictAttr object to get dictionary"
+        "Called by ItemAttr object to get dictionary"
 
         return self._recdict
 ```
@@ -84,8 +84,8 @@ Type annotation is supported.
 ```python
 
 class User(DictModel):
-    name = DictAttr[str]()  # Explicity specify type
-    age = DictAttr(int)     # Inferred from `int` function.
+    name = ItemAttr[str]()  # Explicity specify type
+    age = ItemAttr(int)     # Inferred from `int` function.
 
 
 user.name = "name"  # OK
