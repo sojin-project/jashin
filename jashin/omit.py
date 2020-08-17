@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+import enum
 import sys
 from typing import TYPE_CHECKING
-import enum
 
 if TYPE_CHECKING:
     if sys.version_info >= (3, 8):

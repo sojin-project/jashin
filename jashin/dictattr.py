@@ -1,22 +1,21 @@
 from __future__ import annotations
 
 from typing import (
-    Optional,
     Any,
-    Dict,
-    cast,
-    Sequence,
-    TypeVar,
-    Generic,
     Callable,
-    Tuple,
-    Union,
+    Dict,
+    Generic,
+    Iterable,
     List,
     MutableSequence,
-    Iterable,
+    Optional,
+    Sequence,
+    Tuple,
+    TypeVar,
+    Union,
+    cast,
     overload,
 )
-
 
 from .omit import OMIT
 

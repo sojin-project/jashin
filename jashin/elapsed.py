@@ -1,13 +1,11 @@
 from __future__ import annotations
 
-from typing import DefaultDict, List, Tuple, Iterator, Optional
-
-from typing import NamedTuple
 import atexit
 import collections
 import contextlib
 import statistics
 import time
+from typing import DefaultDict, Iterator, List, NamedTuple, Optional, Tuple
 
 
 class _Result(NamedTuple):

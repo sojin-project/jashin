@@ -1,5 +1,5 @@
 import enum
-from typing import Dict, Any
+from typing import Any, Dict
 
 from jashin.dictattr import *
 
