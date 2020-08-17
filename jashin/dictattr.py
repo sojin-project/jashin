@@ -21,7 +21,7 @@ from typing import (
 
 from .omit import OMIT
 
-__all__ = ("DictAttr", "DictAttrDict", "DictAttrList", "DictModel")
+__all__ = ("ItemAttr", "DictAttr", "MappingAttr", "SequenceAttr", "DictModel")
 
 
 F = TypeVar("F")
@@ -100,7 +100,7 @@ class DictAttrBase(Generic[F]):
         del data[self.name]
 
 
-class DictAttr(DictAttrBase[F]):
+class ItemAttr(DictAttrBase[F]):
     def __get__(self, instance: Any, owner: type) -> F:
         loader, value = self._get_value(instance, owner)
         if not loader:
@@ -116,10 +116,13 @@ class DictAttr(DictAttrBase[F]):
         data[self.name] = value
 
 
+DictAttr = ItemAttr
+
+
 _T = TypeVar("_T")
 
 
-class _AttrList(MutableSequence[_T]):
+class _SeqAttr(MutableSequence[_T]):
     data: List[Any]
     funcs: Tuple[Optional[Loader[_T]], Optional[Dumper[_T]]]
 
@@ -216,10 +219,10 @@ class _AttrList(MutableSequence[_T]):
         self.data.insert(i, self._to_dict(item))
 
 
-class DictAttrList(DictAttrBase[F]):
+class SequenceAttr(DictAttrBase[F]):
     def __get__(self, instance: Any, owner: type) -> Sequence[F]:
         _, value = self._get_value(instance, owner)
-        return _AttrList[F](self.funcs, value, self.dict_method)
+        return _SeqAttr[F](self.funcs, value, self.dict_method)
 
     def __set__(self, instance: Any, value: Sequence[F]) -> None:
 
@@ -234,7 +237,7 @@ _K = TypeVar("_K")
 _V = TypeVar("_V")
 
 
-class _AttrDict(MutableMapping[_K, _V]):
+class _MappingAttr(MutableMapping[_K, _V]):
     data: Dict[Any, Any]
     funcs: Tuple[Optional[Loader[_V]], Optional[Dumper[_V]]]
 
@@ -289,10 +292,10 @@ K = TypeVar("K")
 V = TypeVar("V")
 
 
-class DictAttrDict(Generic[K, V], DictAttrBase[V]):
+class MappingAttr(Generic[K, V], DictAttrBase[V]):
     def __get__(self, instance: Any, owner: type) -> MutableMapping[K, V]:
         _, value = self._get_value(instance, owner)
-        return _AttrDict[K, V](self.funcs, value, self.dict_method)
+        return _MappingAttr[K, V](self.funcs, value, self.dict_method)
 
     def __set__(self, instance: Any, value: MutableMapping[K, V]) -> None:
         assert self.name, "Field name is not provided"

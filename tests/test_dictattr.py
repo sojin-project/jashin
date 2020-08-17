@@ -6,9 +6,9 @@ from jashin.dictattr import *
 
 def test_dictattr() -> None:
     class Test:
-        field1 = DictAttr[str]()
-        field2 = DictAttr[str](name="field_2")
-        field3 = DictAttr[str](default="default_field3")
+        field1 = ItemAttr[str]()
+        field2 = ItemAttr[str](name="field_2")
+        field3 = ItemAttr[str](default="default_field3")
 
         def __dictattr_get__(self) -> Dict[str, Any]:
             return self._dict
@@ -27,15 +27,15 @@ def test_dictattr() -> None:
 
 def test_loader() -> None:
     class Child(DictModel):
-        field1 = DictAttr(int)
+        field1 = ItemAttr(int)
 
     class Label(enum.Enum):
         A = 100
         B = 200
 
     class Parent(DictModel):
-        field1 = DictAttr(Child)
-        field2 = DictAttr(Label)
+        field1 = ItemAttr(Child)
+        field2 = ItemAttr(Label)
 
     d = Parent({"field1": {"field1": "100", "field2": "200",}, "field2": 200})
 
@@ -46,24 +46,24 @@ def test_loader() -> None:
 
 def test_set() -> None:
     class Parent(DictModel):
-        field1 = DictAttr[str]()
+        field1 = ItemAttr[str]()
 
     d = Parent({})
     d.field1 = "abc"
     assert d.values == {"field1": "abc"}
 
     class Parent2(DictModel):
-        field1 = DictAttr[str](dumper=int)
+        field1 = ItemAttr[str](dumper=int)
 
     d2 = Parent2({})
     d2.field1 = "1000"
     assert d2.values == {"field1": 1000}
 
     class Child3(DictModel):
-        field31 = DictAttr[str]()
+        field31 = ItemAttr[str]()
 
     class Parent3(DictModel):
-        field1 = DictAttr(Child3)
+        field1 = ItemAttr(Child3)
 
     d3 = Parent3({"field1": {"field31": "value"}})
     c = Child3({"field31": "value2"})
@@ -75,7 +75,7 @@ def test_set() -> None:
 
 def test_del() -> None:
     class Parent(DictModel):
-        field1 = DictAttr[str]()
+        field1 = ItemAttr[str]()
 
     d = Parent({"field1": "abc"})
     del d.field1
@@ -84,7 +84,7 @@ def test_del() -> None:
 
 def test_list_get() -> None:
     class Parent1(DictModel):
-        field1 = DictAttrList[int]()
+        field1 = SequenceAttr[int]()
 
     d = Parent1({"field1": [1, 2]})
 
@@ -93,10 +93,10 @@ def test_list_get() -> None:
     assert d.field1[1] == 2
 
     class Child2(DictModel):
-        field1 = DictAttr[str]()
+        field1 = ItemAttr[str]()
 
     class Parent2(DictModel):
-        field1 = DictAttrList(Child2)
+        field1 = SequenceAttr(Child2)
 
     d2 = Parent2({"field1": [{"field1": "100",}, {"field1": "200",}]})
 
@@ -107,7 +107,7 @@ def test_list_get() -> None:
 
 def test_list_set() -> None:
     class Parent1(DictModel):
-        field1 = DictAttrList[int]()
+        field1 = SequenceAttr[int]()
 
     d = Parent1({"field1": [1, 2]})
     d.field1 = [3, 4, 5]
@@ -124,7 +124,7 @@ def test_list_set() -> None:
     assert d.values == {"field1": []}
 
     class Parent2(DictModel):
-        field1 = DictAttrList[int](dumper=lambda v: v * 2)
+        field1 = SequenceAttr[int](dumper=lambda v: v * 2)
 
     d2 = Parent2({"field1": [1, 2]})
     d2.field1 = [3, 4, 5]
@@ -135,10 +135,10 @@ def test_list_set() -> None:
     assert d2.values == {"field1": [6, 20, 10]}
 
     class Child3(DictModel):
-        field1 = DictAttr[str]()
+        field1 = ItemAttr[str]()
 
     class Parent3(DictModel):
-        field1 = DictAttrList(Child3)
+        field1 = SequenceAttr(Child3)
 
     d3 = Parent3({"field1": [{"field1": "100",}, {"field1": "200",}]})
 
@@ -165,7 +165,7 @@ def test_list_set() -> None:
 
 def test_dict_get() -> None:
     class Parent1(DictModel):
-        field1 = DictAttrDict[str, int]()
+        field1 = MappingAttr[str, int]()
 
     d = Parent1({"field1": {"k1": 1, "k2": 2}})
 
@@ -174,10 +174,10 @@ def test_dict_get() -> None:
     assert d.field1["k2"] == 2
 
     class Child2(DictModel):
-        field1 = DictAttr[str]()
+        field1 = ItemAttr[str]()
 
     class Parent2(DictModel):
-        field1 = DictAttrDict[int, Child2](Child2)
+        field1 = MappingAttr[int, Child2](Child2)
 
     d2 = Parent2({"field1": {0: {"field1": "100",}, 1: {"field1": "200",}}})
 
@@ -188,7 +188,7 @@ def test_dict_get() -> None:
 
 def test_Dict_set() -> None:
     class Parent1(DictModel):
-        field1 = DictAttrDict[str, int]()
+        field1 = MappingAttr[str, int]()
 
     d = Parent1({"field1": {"k1": 1, "k2": 2}})
     d.field1 = {"k3": 3, "k4": 4, "k5": 5}
@@ -197,7 +197,7 @@ def test_Dict_set() -> None:
     assert d.field1["k3"] == 3
 
     class Parent2(DictModel):
-        field1 = DictAttrDict[str, int](dumper=lambda v: v * 2)
+        field1 = MappingAttr[str, int](dumper=lambda v: v * 2)
 
     d2 = Parent2({"field1": {"k1": 1, "k2": 2}})
     d2.field1 = {"k3": 3, "k4": 4, "k5": 5}
@@ -206,10 +206,10 @@ def test_Dict_set() -> None:
     assert d2.field1["k3"] == 6
 
     class Child3(DictModel):
-        field1 = DictAttr[str]()
+        field1 = ItemAttr[str]()
 
     class Parent3(DictModel):
-        field1 = DictAttrDict[str, Child3](Child3)
+        field1 = MappingAttr[str, Child3](Child3)
 
     d3 = Parent3({"field1": {"a": {"field1": "100",}, "b": {"field1": "200",}}})
 
