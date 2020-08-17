@@ -7,91 +7,91 @@ Assorted Python utilities.
 
 Encapsulate deeply nested dict with class.
 
+To wrap a dictionary like this,
 
 ```python
-from jashin.dictattr import DictAttr
-from dateutil.parser import parse as dateparse
-
-class User:
-    name = DictAttr()
-    age = DictAttr()
-    created = DictAttr(dateparse) # convert string into datetime object
-
-    def __init__(self, rec):
-        self._rec = rec
-
-    def __dictattr_get__(self):
-        """Called by `DictAttr` object to get dictonary."""
-
-        return self._rec
-
-record = {
+userdict = {
     "name": "test user",
-    "age": 20,
-    "created": '2011-01-01T00:00:00'
+    "age": 20
 }
-
-user = User(record)
-
-print(user.name) # -> "test user"
-print(user.age)  # -> 20
-print(repr(user.created)) # -> datetime.datetime(2011, 1, 1, 0, 0)
-
-user.age = 30
-print(record['age']) # -> 30
 ```
 
-Although `DictAttr` works any classes with `__dictattr_get__` method, `DictModel` class is provied to avoid boilerplate code.
 
-The `DictAttr` can be used with nested dict object.
+`Jashin.dictattr` provides `DictAttr` and `DictModel` class.
 
 ```python
-from jashin.dictattr import DictAttr, DictAttrList, DictModel
+from jashin.dictattr import DictAttr, DictModel
 from dateutil.parser import parse as dateparse
 
 class User(DictModel):
     name = DictAttr()
     age = DictAttr()
 
-class Group(DictModel):
-    owner = DictAttr(User)
-    members = DictAttrList(User)
+user = User(userdict)
+print(user.name, user.created)
 
-record = {
-    "owner": {
-        "name": "owner name",
-        "age": 30
-    },
-    "members": [{
-        "name": "member1",
-        "age": 30
-    },]
-}
-
-group = Group(record)
-
-print(group.owner.name) # -> "owner name"
-print(group.members[0].name) # -> "member1"
+user.age = 30          # updates userdict
+pritn(userdict['age']) # prints 30
 ```
+
+`DictAttr` supports nested objects.
+
+```python
+
+companydict = {
+    "CEO": {
+        name: "A CEO",
+        age: "21",
+    }
+    "COO": {
+        name: "A COO",
+        age: "31",
+    }
+}
+```
+
+To wrap a dictionary above, you can provide `Company` class.
+
+```python
+class Company(DictModel):
+    ceo = DictAttr(name='CEO')
+    coo = DictAttr(name='COO')
+
+company = Company(companydict)
+print(company.ceo.name)  # prints 'A CEO'
+```
+
+`DictModel` class is not mandatory, but is provied to avoid boilerplate code. `DictAttr` works any classes with `__dictattr_get__` method.
+
+
+```python
+class User:
+    name = DictAttr()
+    age = DictAttr()
+
+    def __init__(self, record):
+        self._recdict = record
+
+    def __dictattr_get__(self):
+        "Called by DictAttr object to get dictionary"
+
+        return self._recdict
+```
+
 
 Type annotation is supported.
 
 ```python
-from dateutil.parser import parse as dateparse
 
 class User(DictModel):
     name = DictAttr[str]()  # Explicity specify type
     age = DictAttr(int)     # Inferred from `int` function.
-    created = DictAttr(dateparse) # Inferred from `dateparse` function.
 
 
 user.name = "name"  # OK
 user.age = "30"     # Incompatible types in assignment
-                    # (expression has type "str", variable has type "int")
-
-user.age = 100      # Incompatible types in assignment
-                    # (expression has type "int", variable has type "datetime")
-
+                    # The right hand side expression has type "str",
+                    # but 'age' attribute has type "int".
 ```
 
 

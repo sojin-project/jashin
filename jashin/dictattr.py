@@ -6,7 +6,9 @@ from typing import (
     Dict,
     Generic,
     Iterable,
+    Iterator,
     List,
+    MutableMapping,
     MutableSequence,
     Optional,
     Sequence,
@@ -19,7 +21,7 @@ from typing import (
 
 from .omit import OMIT
 
-__all__ = ("DictAttr", "DictAttrList", "DictModel")
+__all__ = ("DictAttr", "DictAttrDict", "DictAttrList", "DictModel")
 
 
 F = TypeVar("F")
@@ -38,8 +40,8 @@ class DictAttrBase(Generic[F]):
         *,
         name: Optional[str] = None,
         default: Any = OMIT,
-        dict_method: str = "__dictattr_get__",
         dumper: Optional[Dumper[F]] = None,
+        dict_method: str = "__dictattr_get__",
     ):
 
         # save loader/dumper as tuple to prevent descr functionary
@@ -88,7 +90,6 @@ class DictAttrBase(Generic[F]):
     def _set(self, instance: Any, value: Any) -> None:
         assert self.name, "Field name is not provided"
         data = self._get_dict(instance)
-        self.funcs[1]
 
         value = self._dump_value(value)
         data[self.name] = value
@@ -123,10 +124,14 @@ class _AttrList(MutableSequence[_T]):
     funcs: Tuple[Optional[Loader[_T]], Optional[Dumper[_T]]]
 
     def __init__(
-        self, funcs: Tuple[Optional[Loader[_T]], Optional[Dumper[_T]]], data: List[Any]
+        self,
+        funcs: Tuple[Optional[Loader[_T]], Optional[Dumper[_T]]],
+        data: List[Any],
+        dict_method: str,
     ) -> None:
         self.funcs = funcs
         self.data = data
+        self.dict_method = dict_method
 
     def _from_dict(self, o: Any) -> _T:
         loader = self.funcs[0]
@@ -146,15 +151,27 @@ class _AttrList(MutableSequence[_T]):
         dumper = self.funcs[1]
         if dumper:
             return dumper(o)
-        else:
-            return o
+
+        f = getattr(o, self.dict_method, None)
+        if f:
+            return f()
+
+        return o
 
     def _to_dict_seq(self, o: Iterable[_T]) -> MutableSequence[_T]:
         dumper = self.funcs[1]
         if dumper:
             return [dumper(i) for i in o]
-        else:
-            return list(o)
+
+        ret = []
+        for item in o:
+            f = getattr(item, self.dict_method, None)
+            if f:
+                ret.append(f())
+            else:
+                ret.append(item)
+
+        return ret
 
     def __len__(self) -> int:
         return len(self.data)
@@ -202,7 +219,7 @@ class _AttrList(MutableSequence[_T]):
 class DictAttrList(DictAttrBase[F]):
     def __get__(self, instance: Any, owner: type) -> Sequence[F]:
         _, value = self._get_value(instance, owner)
-        return _AttrList[F](self.funcs, value)
+        return _AttrList[F](self.funcs, value, self.dict_method)
 
     def __set__(self, instance: Any, value: Sequence[F]) -> None:
 
@@ -213,11 +230,83 @@ class DictAttrList(DictAttrBase[F]):
         data[self.name] = values
 
 
-class DictModel:
-    _dict: Dict[str, Any]
+_K = TypeVar("_K")
+_V = TypeVar("_V")
 
-    def __init__(self, dict: Dict[str, Any]) -> None:
-        self._dict = dict
+
+class _AttrDict(MutableMapping[_K, _V]):
+    data: Dict[Any, Any]
+    funcs: Tuple[Optional[Loader[_V]], Optional[Dumper[_V]]]
+
+    def __init__(
+        self,
+        funcs: Tuple[Optional[Loader[_V]], Optional[Dumper[_V]]],
+        data: Dict[Any, Any],
+        dict_method: str,
+    ) -> None:
+        self.funcs = funcs
+        self.data = data
+        self.dict_method = dict_method
+
+    def _from_dict(self, o: Any) -> _V:
+        loader = self.funcs[0]
+        if loader:
+            return loader(o)
+        else:
+            return cast(_V, o)
+
+    def _to_dict(self, o: _V) -> Any:
+        dumper = self.funcs[1]
+        if dumper:
+            return dumper(o)
+
+        f = getattr(o, self.dict_method, None)
+        if f:
+            return f()
+
+        return o
+
+    def __len__(self) -> int:
+        return len(self.data)
+
+    def __getitem__(self, k: _K) -> _V:
+        return self._from_dict(self.data[k])
+
+    def __setitem__(self, k: _K, item: _V) -> None:
+        self.data[k] = self._to_dict(item)
+
+    def __delitem__(self, k: _K) -> None:
+        del self.data[k]
+
+    def __repr__(self) -> str:
+        return f"<_AttrDict: {self.data!r}>"
+
+    def __iter__(self) -> Iterator[_K]:
+        return iter(self.data)
+
+
+K = TypeVar("K")
+V = TypeVar("V")
+
+
+class DictAttrDict(Generic[K, V], DictAttrBase[V]):
+    def __get__(self, instance: Any, owner: type) -> MutableMapping[K, V]:
+        _, value = self._get_value(instance, owner)
+        return _AttrDict[K, V](self.funcs, value, self.dict_method)
+
+    def __set__(self, instance: Any, value: MutableMapping[K, V]) -> None:
+        assert self.name, "Field name is not provided"
+        data = self._get_dict(instance)
+
+        values = {k: self._dump_value(v) for k, v in value.items()}
+        data[self.name] = values
+
+
+class DictModel:
+    values: Dict[str, Any]
+
+    def __init__(self, values: Dict[str, Any]) -> None:
+        self.values = values
 
     def __dictattr_get__(self) -> Dict[str, Any]:
-        return self._dict
+        return self.values
