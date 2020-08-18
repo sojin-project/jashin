@@ -222,6 +222,7 @@ class _SeqAttr(MutableSequence[_T]):
 class SequenceAttr(DictAttrBase[F]):
     def __get__(self, instance: Any, owner: type) -> Sequence[F]:
         _, value = self._get_value(instance, owner)
+
         return _SeqAttr[F](self.funcs, value, self.dict_method)
 
     def __set__(self, instance: Any, value: Sequence[F]) -> None:
@@ -295,6 +296,7 @@ V = TypeVar("V")
 class MappingAttr(Generic[K, V], DictAttrBase[V]):
     def __get__(self, instance: Any, owner: type) -> MutableMapping[K, V]:
         _, value = self._get_value(instance, owner)
+
         return _MappingAttr[K, V](self.funcs, value, self.dict_method)
 
     def __set__(self, instance: Any, value: MutableMapping[K, V]) -> None:
