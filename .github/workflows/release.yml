@@ -1,4 +1,4 @@
-name: Release miyadaiku
+name: Release jashin
 
 on:
   release:
