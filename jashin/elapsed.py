@@ -3,7 +3,6 @@ from __future__ import annotations
 import atexit
 import collections
 import contextlib
-import statistics
 import time
 from typing import DefaultDict, Iterator, List, NamedTuple, Optional, Tuple
 
@@ -30,7 +29,12 @@ class Elapsed:
 
     def end(self) -> None:
         name, f = self._stack.pop()
-        self._map[name].append(time.time() - f)
+        t = time.time() - f
+        rec = self._map[name]
+        if not rec:
+            rec[:] = (0.0, 0)
+        rec[0] += t
+        rec[1] += 1
 
     @contextlib.contextmanager
     def __call__(self, name: str) -> Iterator[Elapsed]:
@@ -40,14 +44,15 @@ class Elapsed:
 
     def result(self, name: str) -> Optional[_Result]:
         if name in self._map:
-            secs = self._map[name]
-            return _Result(name, len(secs), sum(secs), statistics.mean(secs))
+            total, n = self._map[name]
+            mean = total / n
+            return _Result(name, int(n), total, mean)
         else:
             return None
 
     def results(self) -> List[Optional[_Result]]:
         ret = []
-        for name in self._map.keys():
+        for name in sorted(self._map.keys()):
             ret.append(self.result(name))
         return ret
 
@@ -59,7 +64,7 @@ class Elapsed:
         else:
             i = iter(self._map.keys())
 
-        for name in i:
+        for name in sorted(i):
             rec = self.result(name)
             if rec:
                 self._print(rec)

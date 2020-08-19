@@ -13,13 +13,22 @@ def test_elapsed() -> None:
         for i in range(10):
             with e("block1"):
                 a += 1
-                with e("block2"):
-                    a += 1
+                for j in range(10):
+                    with e("block2"):
+                        a += 1
 
-                with e("block3"):
+                for k in range(20):
+                    e.begin("block3")
                     a += 1
+                    e.end()
 
     test()
+
+    assert e._map["block1"][1] == 10
+    assert e._map["block2"][1] == 100
+    assert e._map["block3"][1] == 200
+
+    e.print()
 
     f = StringIO()
     with redirect_stdout(f):
