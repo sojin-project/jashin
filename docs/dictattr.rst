@@ -129,7 +129,7 @@ Assignment to the nested item also works.
 .. code-block::
 
    book.author.name = "updated name"
-   print(bookdict["author"]["name"]) # prints "updard name"
+   print(bookdict["author"]["name"]) # prints "updated name"
 
 
 Sequcence of nested child items
