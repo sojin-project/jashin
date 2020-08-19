@@ -4,6 +4,8 @@
 # list see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
+import sphinx_rtd_theme  # noqa
+
 # -- Path setup --------------------------------------------------------------
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -27,7 +29,7 @@ author = "atsuo ishimoto"
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ["sphinx.ext.autodoc", "sphinx_autodoc_typehints"]
+extensions = ["sphinx.ext.autodoc", "sphinx_autodoc_typehints", "sphinx_rtd_theme"]
 
 
 # Add any paths that contain templates here, relative to this directory.
@@ -58,4 +60,4 @@ html_theme = "alabaster"
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 
-html_theme = "sphinxdoc"
+html_theme = "sphinx_rtd_theme"

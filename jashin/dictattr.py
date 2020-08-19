@@ -99,12 +99,26 @@ class ItemAttrBase(Generic[F]):
 
 
 class ItemAttr(ItemAttrBase[F]):
-    """ItemAttr
+    """Define an attribute to access an item of the source dictionary.
 
     :param load: Convert value from the source dictionary item.
     :param dump: Convert assigned value to store to the source dictionary item.
     :param name: key in the source dictionary item. Default to attr name in class.
     :param default: Default value is the item is not exit in the source dictionary.
+
+    ItemAttr get value from the dictionary obtained from self.__dictattr_get__()
+    method of the class. The key to retrieve value from the dictionary is the name
+    of attribute. If ``name`` is specified, it is used as the key instead.
+
+    ``load`` is a function with a single argument. If specified, ``load`` is called
+    on read acess on the attribute to convert value in the dictionary.
+
+    ``dump`` is a function with a single argument. If specified, ``dump`` is called
+    on write acess on the attribute to convert value to be stored to the dictionary.
+    If the ``dump`` is not specified and the value assigned to has ``__dictattr_get__``
+    method, the result of ``__dictattr_get__()`` method is stored to the dictionary.
+
+    ``default`` is the value used if the key is not exist on the source dictionary.
 
     """
 
@@ -224,13 +238,15 @@ class _SeqAttr(MutableSequence[_T]):
 
 
 class SequenceAttr(ItemAttrBase[F]):
-    """SequenceAttr
+    """SequenceAttr is ItemAttr specialized for sequence.
 
     :param load: Convert value from the source dictionary item.
     :param dump: Convert assigned value to store to the source dictionary item.
     :param name: key in the source dictionary item. Default to attr name in class.
     :param default: Default value is the item is not exit in the source dictionary.
 
+    Each elements in the sequence is converted by ``load``/``dump`` function on
+    reading/writing the value.
     """
 
     def __get__(self, instance: Any, owner: type) -> Sequence[F]:
@@ -307,13 +323,23 @@ V = TypeVar("V")
 
 
 class MappingAttr(Generic[K, V], ItemAttrBase[V]):
-    """SequenceAttr
+    """MappingAttr is ItemAttr specialized for mapping.
 
     :param load: Convert value from the source dictionary item.
     :param dump: Convert assigned value to store to the source dictionary item.
     :param name: key in the source dictionary item. Default to attr name in class.
     :param default: Default value is the item is not exit in the source dictionary.
 
+    Each item value in the mapping is converted by ``load``/``dump`` function on
+    reading/writing the value.
+
+    Unlike ItemAttr, MappingAttr is a generic class with two type parameter for
+    key and value.
+
+    ::
+
+        class Test(DictModel):
+            mappingfield = MappingAttr[str, int]()  # mappingfield is Dict[str, int]
     """
 
     def __get__(self, instance: Any, owner: type) -> MutableMapping[K, V]:
@@ -332,11 +358,11 @@ class MappingAttr(Generic[K, V], ItemAttrBase[V]):
 class DictModel:
     """DictModel can be used to wrap dictionary object.
 
+    :param values: Dictionary to wrap.
 
     DictModel class is not mandatory to use ItemAttr, but is provied to avoid boilerplate code.
     ItemAttr works any classes with ``__dictattr_get__()`` method.
 
-    :param values: Dictionary to wrap.
 
     """
 
