@@ -11,7 +11,7 @@ if TYPE_CHECKING:
         from typing_extensions import Final
 
 
-__all__ = ["Omit", "OMIT"]
+__all__ = ["OMIT"]
 
 
 class Omit(enum.Enum):
@@ -36,6 +36,9 @@ class Omit(enum.Enum):
         func2(None)
         func2()
     """
+
+    def __repr__(self) -> str:
+        return "<OMIT>"
 
     omit = True
 

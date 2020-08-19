@@ -5,7 +5,7 @@ Assorted Python utilities.
 
 ## jashin.dictattr module
 
-Type annotation ready module to encapsulate nested dict with class.
+`jashin.dictattr` provides `ItemAttr` and `DictModel` to define class that wraps dictionary objects.
 
 To wrap a dictionary like this,
 
@@ -16,8 +16,7 @@ userdict = {
 }
 ```
 
-
-`Jashin.dictattr` provides `ItemAttr` and `DictModel` class.
+You can use `ItemAttr` and `DictModel`  as follows.
 
 ```python
 from jashin.dictattr import ItemAttr, DictModel

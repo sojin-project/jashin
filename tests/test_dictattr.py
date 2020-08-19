@@ -53,7 +53,7 @@ def test_set() -> None:
     assert d.values == {"field1": "abc"}
 
     class Parent2(DictModel):
-        field1 = ItemAttr[str](dumper=int)
+        field1 = ItemAttr[str](dump=int)
 
     d2 = Parent2({})
     d2.field1 = "1000"
@@ -124,7 +124,7 @@ def test_list_set() -> None:
     assert d.values == {"field1": []}
 
     class Parent2(DictModel):
-        field1 = SequenceAttr[int](dumper=lambda v: v * 2)
+        field1 = SequenceAttr[int](dump=lambda v: v * 2)
 
     d2 = Parent2({"field1": [1, 2]})
     d2.field1 = [3, 4, 5]
@@ -197,7 +197,7 @@ def test_Dict_set() -> None:
     assert d.field1["k3"] == 3
 
     class Parent2(DictModel):
-        field1 = MappingAttr[str, int](dumper=lambda v: v * 2)
+        field1 = MappingAttr[str, int](dump=lambda v: v * 2)
 
     d2 = Parent2({"field1": {"k1": 1, "k2": 2}})
     d2.field1 = {"k3": 3, "k4": 4, "k5": 5}

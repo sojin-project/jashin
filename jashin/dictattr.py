@@ -21,7 +21,7 @@ from typing import (
 
 from .omit import OMIT
 
-__all__ = ("ItemAttr", "DictAttr", "MappingAttr", "SequenceAttr", "DictModel")
+__all__ = ("ItemAttr", "MappingAttr", "SequenceAttr", "DictModel")
 
 
 F = TypeVar("F")
@@ -29,37 +29,35 @@ Loader = Callable[[Any], F]
 Dumper = Callable[[F], Any]
 
 
-class DictAttrBase(Generic[F]):
+class ItemAttrBase(Generic[F]):
     funcs: Tuple[Optional[Loader[F]], Optional[Dumper[F]]]
     name: Optional[str]
-    dict_method: str
+    DICT_METHOD: str = "__dictattr_get__"
 
     def __init__(
         self,
-        func: Optional[Loader[F]] = None,
+        load: Optional[Loader[F]] = None,
+        dump: Optional[Dumper[F]] = None,
         *,
         name: Optional[str] = None,
         default: Any = OMIT,
-        dumper: Optional[Dumper[F]] = None,
-        dict_method: str = "__dictattr_get__",
     ):
 
         # save loader/dumper as tuple to prevent descr functionary
-        self.funcs = (func, dumper)
+        self.funcs = (load, dump)
         self.name = name
         self.default = default
-        self.dict_method = dict_method
 
     def __set_name__(self, owner: Any, name: str) -> None:
         if self.name is None:
             self.name = name
 
     def _get_dict(self, instance: Any) -> Dict[str, Any]:
-        f = getattr(instance, self.dict_method, None)
+        f = getattr(instance, self.DICT_METHOD, None)
         if not f:
             raise TypeError(
                 f"{instance.__class__.__qualname__} does not provide"
-                f"`{self.dict_method}` method."
+                f"`{self.DICT_METHOD}` method."
             )
 
         return cast(Dict[str, Any], f())
@@ -81,7 +79,7 @@ class DictAttrBase(Generic[F]):
         if dumper:
             return dumper(value)
 
-        f = getattr(value, self.dict_method, None)
+        f = getattr(value, self.DICT_METHOD, None)
         if f:
             return f()
 
@@ -100,7 +98,16 @@ class DictAttrBase(Generic[F]):
         del data[self.name]
 
 
-class ItemAttr(DictAttrBase[F]):
+class ItemAttr(ItemAttrBase[F]):
+    """ItemAttr
+
+    :param load: Convert value from the source dictionary item.
+    :param dump: Convert assigned value to store to the source dictionary item.
+    :param name: key in the source dictionary item. Default to attr name in class.
+    :param default: Default value is the item is not exit in the source dictionary.
+
+    """
+
     def __get__(self, instance: Any, owner: type) -> F:
         loader, value = self._get_value(instance, owner)
         if not loader:
@@ -114,9 +121,6 @@ class ItemAttr(DictAttrBase[F]):
 
         value = self._dump_value(value)
         data[self.name] = value
-
-
-DictAttr = ItemAttr
 
 
 _T = TypeVar("_T")
@@ -219,11 +223,20 @@ class _SeqAttr(MutableSequence[_T]):
         self.data.insert(i, self._to_dict(item))
 
 
-class SequenceAttr(DictAttrBase[F]):
+class SequenceAttr(ItemAttrBase[F]):
+    """SequenceAttr
+
+    :param load: Convert value from the source dictionary item.
+    :param dump: Convert assigned value to store to the source dictionary item.
+    :param name: key in the source dictionary item. Default to attr name in class.
+    :param default: Default value is the item is not exit in the source dictionary.
+
+    """
+
     def __get__(self, instance: Any, owner: type) -> Sequence[F]:
         _, value = self._get_value(instance, owner)
 
-        return _SeqAttr[F](self.funcs, value, self.dict_method)
+        return _SeqAttr[F](self.funcs, value, self.DICT_METHOD)
 
     def __set__(self, instance: Any, value: Sequence[F]) -> None:
 
@@ -293,11 +306,20 @@ K = TypeVar("K")
 V = TypeVar("V")
 
 
-class MappingAttr(Generic[K, V], DictAttrBase[V]):
+class MappingAttr(Generic[K, V], ItemAttrBase[V]):
+    """SequenceAttr
+
+    :param load: Convert value from the source dictionary item.
+    :param dump: Convert assigned value to store to the source dictionary item.
+    :param name: key in the source dictionary item. Default to attr name in class.
+    :param default: Default value is the item is not exit in the source dictionary.
+
+    """
+
     def __get__(self, instance: Any, owner: type) -> MutableMapping[K, V]:
         _, value = self._get_value(instance, owner)
 
-        return _MappingAttr[K, V](self.funcs, value, self.dict_method)
+        return _MappingAttr[K, V](self.funcs, value, self.DICT_METHOD)
 
     def __set__(self, instance: Any, value: MutableMapping[K, V]) -> None:
         assert self.name, "Field name is not provided"
@@ -308,10 +330,23 @@ class MappingAttr(Generic[K, V], DictAttrBase[V]):
 
 
 class DictModel:
+    """DictModel can be used to wrap dictionary object.
+
+
+    DictModel class is not mandatory to use ItemAttr, but is provied to avoid boilerplate code.
+    ItemAttr works any classes with ``__dictattr_get__()`` method.
+
+    :param values: Dictionary to wrap.
+
+    """
+
     values: Dict[str, Any]
 
     def __init__(self, values: Dict[str, Any]) -> None:
         self.values = values
 
     def __dictattr_get__(self) -> Dict[str, Any]:
+        """Special method called by ItemAttr.
+        Returns dictionary object to wrap."""
+
         return self.values
