@@ -249,7 +249,7 @@ class SequenceAttr(ItemAttrBase[F]):
     reading/writing the value.
     """
 
-    def __get__(self, instance: Any, owner: type) -> Sequence[F]:
+    def __get__(self, instance: Any, owner: type) -> MutableSequence[F]:
         _, value = self._get_value(instance, owner)
 
         return _SeqAttr[F](self.funcs, value, self.DICT_METHOD)
